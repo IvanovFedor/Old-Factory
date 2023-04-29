@@ -48,7 +48,7 @@ public class Enemy_AI : MonoBehaviour
         }
     }
 
-    public void GetSomeEvents(string Event, float SomeElements)
+    public void SetSomeEvents(string Event, float SomeElements)
     {
         switch (Event)
         {
