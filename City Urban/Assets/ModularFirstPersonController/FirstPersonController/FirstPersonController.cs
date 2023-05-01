@@ -131,6 +131,8 @@ public class FirstPersonController : MonoBehaviour
 
     #endregion
 
+
+    [SerializeField] private Enemy_AI enemy;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -280,7 +282,6 @@ public class FirstPersonController : MonoBehaviour
             {
                 isZoomed = false;
                 playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, sprintFOV, sprintFOVStepTime * Time.deltaTime);
-
                 // Drain sprint remaining while sprinting
                 if(!unlimitedSprint)
                 {
