@@ -1,10 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemy_AI : MonoBehaviour
 {
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    [Header("Screamer")]
+    [SerializeField] private GameObject PlayerCam;
+    [SerializeField] private GameObject ScreemerCam;
+    [SerializeField] private GameObject DeathCam;
+    [SerializeField] private GameObject LocationDeath;
+
     [Header("Navigation")]
     [SerializeField] private GameObject Player_tg;
     [SerializeField] private NavMeshAgent nav;
@@ -25,6 +34,18 @@ public class Enemy_AI : MonoBehaviour
 
     [SerializeField] private float Timer_wait = 0f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip audioClip_Screamer;
+
+    [Header("Logic")]
+    [SerializeField] private bool IsPlKill = false;
+
+    [Header("PlayerUIDeath")]
+    [SerializeField] private GameObject HideObj;
+    [SerializeField] private GameObject VisibleObj;
+
+
     void Start()
     {
         Points = GameObject.FindGameObjectsWithTag("Point");//обозначаем поинт
@@ -39,18 +60,20 @@ public class Enemy_AI : MonoBehaviour
         //Переменные для измерения растояния 
         float distanse = Vector3.Distance(gameObject.transform.position, Target.transform.position);
         float distanseLast = Vector3.Distance(gameObject.transform.position, PointLast.transform.position);
-        if (distanse <= 2f && Target.tag == "Point")//следующий поинт при достижении целевого поинта
+        if (distanse <= 3f && Target.tag == "Point" && Target.tag != "Player")//следующий поинт при достижении целевого поинта
         {
             Timer_wait += 0.25f;
+            animator.SetInteger("Stage", 0);
             if (Timer_wait >= 50f)
             {
                 SearchPoint();
                 Timer_wait = 0f;
             }
         } 
-        if(distanseLast <= 2f)//Потеря игрока монстром
+        if(distanseLast <= 3f && Target.tag != "Player")//Потеря игрока монстром
         {
             Timer_wait += 0.25f;
+            animator.SetInteger("Stage", 0);
             if (Timer_wait >= 50f)
             {
                 SearchPoint();
@@ -72,11 +95,7 @@ public class Enemy_AI : MonoBehaviour
             nav.destination = Player_tg.transform.position;
         }
         
-        //ТУТ НЕ ДОРАБОТКА! Смерть игрока
-        if (distanse < 1f && Target.tag == "Player")
-        {
-            print("нужен переход к методу смерти игрока");
-        }
+        
 
 
         //Кидаем луч к игроку
@@ -100,11 +119,28 @@ public class Enemy_AI : MonoBehaviour
                 DontEngry();
             }
         }
+        //ТУТ НЕ ДОРАБОТКА! Смерть игрока
+        if (distansePl <= 2f && IsPlKill == false)
+        {
+            print("нужен переход к методу смерти игрока");
+            StartCoroutine(KillPlayer());
+            IsPlKill = true;
+        }
+        if(IsPlKill == true)
+        {
+            PlayerCam.transform.parent = null;
+            PlayerCam.transform.position = ScreemerCam.transform.position;
+            PlayerCam.transform.rotation = ScreemerCam.transform.rotation;
+            PlayerCam.GetComponent<Camera>().fieldOfView = 110f;
+            Player_tg.SetActive(false);
+            animator.SetInteger("Stage", 6);
+        }
     }
     //ищет рандомный поинт
     void SearchPoint()
     {
-        foreach(GameObject target_point in Points)
+        animator.SetInteger("Stage", 1);
+        foreach (GameObject target_point in Points)
         {
             float distanse = Vector3.Distance(gameObject.transform.position, target_point.transform.position);
             if(distanse > 5f)
@@ -120,11 +156,13 @@ public class Enemy_AI : MonoBehaviour
     public void Engry()// Только для удобства / перенаправляет внимание врага
     {
         PointLast.transform.position = Player_tg.transform.position;
+        animator.SetInteger("Stage", 1);
     }
 
     public void DontEngry()//сменяет поведения монстра на не агресивную и направляет его к последней позиции игрока / ищет игрока
     {
-        if(StepsOfEnemy == "DontEngry")
+        animator.SetInteger("Stage", 1);
+        if (StepsOfEnemy == "DontEngry")
         {
             StepsOfEnemy = "WaitIFindYou";
             WaitIFindYou(Player_tg.transform);
@@ -134,6 +172,7 @@ public class Enemy_AI : MonoBehaviour
     public void WaitIFindYou(Transform LastPosition)//присвавает получаемый ласт поинт к действуещему объекту
     {
         PointLast.transform.position = LastPosition.position;
+        animator.SetInteger("Stage", 1);
     }
 
     public void SetSomeEvents(string Event, float SomeElements = 0)// немного входящих Параметров
@@ -158,5 +197,18 @@ public class Enemy_AI : MonoBehaviour
             case "Damage":
                 break;
         }
+    }
+
+
+    IEnumerator KillPlayer()
+    {
+        audioSource.PlayOneShot(audioClip_Screamer);
+        yield return new WaitForSeconds(1.12f);
+        audioSource.Stop();
+        PlayerCam.SetActive(false);
+        DeathCam.SetActive(true);
+        HideObj.SetActive(false);
+        VisibleObj.SetActive(true);
+        LocationDeath.SetActive(true);
     }
 }
