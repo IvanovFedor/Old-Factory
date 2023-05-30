@@ -33,6 +33,7 @@ public class Enemy_AI : MonoBehaviour
     [SerializeField] private float Speed = 3f;
 
     [SerializeField] private float Timer_wait = 0f;
+    [SerializeField] private float Timer = 0f;
 
     [Header("Audio")]
     [SerializeField] private AudioSource audioSource;
@@ -60,7 +61,7 @@ public class Enemy_AI : MonoBehaviour
         //Переменные для измерения растояния 
         float distanse = Vector3.Distance(gameObject.transform.position, Target.transform.position);
         float distanseLast = Vector3.Distance(gameObject.transform.position, PointLast.transform.position);
-        if (distanse <= 3f && Target.tag == "Point" && Target.tag != "Player")//следующий поинт при достижении целевого поинта
+        if (distanse <= 3f && Target.tag == "Point" && Target.gameObject != Player_tg && Target.gameObject != PointLast)//следующий поинт при достижении целевого поинта
         {
             Timer_wait += 0.25f;
             animator.SetInteger("Stage", 0);
@@ -70,7 +71,7 @@ public class Enemy_AI : MonoBehaviour
                 Timer_wait = 0f;
             }
         } 
-        if(distanseLast <= 3f && Target.tag != "Player")//Потеря игрока монстром
+        if(distanseLast <= 3f && Target.gameObject != Player_tg && Target.gameObject != PointLast)//Потеря игрока монстром
         {
             Timer_wait += 0.25f;
             animator.SetInteger("Stage", 0);
@@ -97,7 +98,6 @@ public class Enemy_AI : MonoBehaviour
         
         
 
-
         //Кидаем луч к игроку
         float distansePl = Vector3.Distance(gameObject.transform.position, Player_tg.transform.position);
         PointRay.transform.LookAt(Player_tg.transform.position);//поворачиваем поинт к игроку
@@ -119,23 +119,35 @@ public class Enemy_AI : MonoBehaviour
                 DontEngry();
             }
         }
-        //ТУТ НЕ ДОРАБОТКА! Смерть игрока
+        //ИДЁТ ДОРАБОТКА! Смерть игрока
         if (distansePl <= 2f && IsPlKill == false)
         {
             print("нужен переход к методу смерти игрока");
-            StartCoroutine(KillPlayer());
+            //StartCoroutine(KillPlayer());
+            audioSource.PlayOneShot(audioClip_Screamer);
             IsPlKill = true;
         }
         if(IsPlKill == true)
         {
+            Timer += Time.deltaTime;
             PlayerCam.transform.parent = null;
             PlayerCam.transform.position = ScreemerCam.transform.position;
             PlayerCam.transform.rotation = ScreemerCam.transform.rotation;
             PlayerCam.GetComponent<Camera>().fieldOfView = 110f;
             Player_tg.SetActive(false);
             animator.SetInteger("Stage", 6);
+            if(Timer >= 1.12f)
+            {
+                audioSource.Stop();
+                PlayerCam.SetActive(false);
+                DeathCam.SetActive(true);
+                HideObj.SetActive(false);
+                VisibleObj.SetActive(true);
+                LocationDeath.SetActive(true);
+            }
         }
     }
+
     //ищет рандомный поинт
     void SearchPoint()
     {
@@ -152,6 +164,7 @@ public class Enemy_AI : MonoBehaviour
     }
 
 
+    //Реакция на игрока
     //Ставит поинт на позицию игрока
     public void Engry()// Только для удобства / перенаправляет внимание врага
     {
@@ -174,6 +187,7 @@ public class Enemy_AI : MonoBehaviour
         PointLast.transform.position = LastPosition.position;
         animator.SetInteger("Stage", 1);
     }
+    //Конец агра сверху
 
     public void SetSomeEvents(string Event, float SomeElements = 0)// немного входящих Параметров
     {
@@ -200,9 +214,8 @@ public class Enemy_AI : MonoBehaviour
     }
 
 
-    IEnumerator KillPlayer()
+    /*IEnumerator KillPlayer()
     {
-        audioSource.PlayOneShot(audioClip_Screamer);
         yield return new WaitForSeconds(1.12f);
         audioSource.Stop();
         PlayerCam.SetActive(false);
@@ -210,5 +223,5 @@ public class Enemy_AI : MonoBehaviour
         HideObj.SetActive(false);
         VisibleObj.SetActive(true);
         LocationDeath.SetActive(true);
-    }
+    }*/
 }
