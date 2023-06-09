@@ -106,7 +106,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HeightDisplacement: 0.01
+    - _HeightDisplacement: 0
     - _Metallic: 0
     - _MetallicStrength: 0
     - _Mode: 0
@@ -136,7 +136,7 @@ Material:
     - _TessMax: 25
     - _TessMin: 10
     - _TessValue: 5
-    - _Tile: 1
+    - _Tile: 10
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentSortPriority: 0

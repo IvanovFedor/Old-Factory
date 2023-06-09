@@ -412,8 +412,8 @@ Material:
     - _ShiverDirectionality: 0.5
     - _ShiverDrag: 0.2
     - _Smoothness: 0.5
-    - _SmoothnessRemapMax: 0.9397691
-    - _SmoothnessRemapMin: 0.7662707
+    - _SmoothnessRemapMax: 1
+    - _SmoothnessRemapMin: 0.8362529
     - _SmoothnessTextureChannel: 0
     - _Snow: 0
     - _SnowBumpMacro: 0.1
